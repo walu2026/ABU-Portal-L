@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABU Lernportal – Lehrperson</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --t1:#C0392B;--t2:#E67E22;--t3:#27AE60;--t4:#2980B9;--t5:#F39C12;--t6:#8E44AD;--t7:#6C3483;
+    --g9:#111827;--g7:#374151;--g5:#6B7280;--g3:#D1D5DB;--g1:#F3F4F6;
+    --phase-e:#2980B9;--phase-th:#27AE60;--phase-ue:#E67E22;--phase-a:#8E44AD;--phase-vid:#1a5276;--phase-ppt:#C0392B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#F0F2F5;color:var(--g7);}
+  .wrap{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;}
+
+  .p1-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(30px,5vw,46px);font-weight:800;text-transform:uppercase;color:var(--g9);letter-spacing:-1px;line-height:1;margin-bottom:4px;}
+  .p1-sub{font-size:13px;color:var(--g5);margin-bottom:1.5rem;}
+  .lp-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:#EDE9FE;color:#5B21B6;padding:4px 10px;border-radius:20px;margin-bottom:0.75rem;}
+
+  .rainbow{display:flex;height:3px;border-radius:2px;overflow:hidden;margin-bottom:2rem;}
+  .rainbow span{flex:1;}
+
+  /* Filter bar */
+  .filter-bar{background:white;border-radius:14px;padding:16px 20px;margin-bottom:1.75rem;display:flex;flex-wrap:wrap;gap:12px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .filter-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--g5);margin-right:4px;}
+  .filter-group{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .phase-btn{border:1.5px solid var(--g3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;background:white;color:var(--g5);transition:all .15s;letter-spacing:0.3px;}
+  .phase-btn:hover{border-color:var(--g7);color:var(--g9);}
+  .phase-btn.active{color:white;border-color:transparent;}
+  .phase-btn[data-phase="E"].active{background:var(--phase-e);}
+  .phase-btn[data-phase="TH"].active{background:var(--phase-th);}
+  .phase-btn[data-phase="UE"].active{background:var(--phase-ue);}
+  .phase-btn[data-phase="A"].active{background:var(--phase-a);}
+  .phase-btn[data-phase="VID"].active{background:var(--phase-vid);}
+  .phase-btn[data-phase="PPT"].active{background:var(--phase-ppt);}
+  .phase-btn[data-phase="ALL"].active{background:var(--g9);}
+  .divider{width:1px;height:24px;background:var(--g3);}
+  select{font-size:12px;border:1.5px solid var(--g3);border-radius:8px;padding:5px 10px;background:white;color:var(--g7);cursor:pointer;}
+
+  /* Stats bar */
+  .stats-bar{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .stat-card{background:white;border-radius:10px;padding:10px 16px;font-size:12px;color:var(--g5);border:1px solid var(--g3);}
+  .stat-card strong{font-size:18px;font-weight:700;color:var(--g9);display:block;line-height:1.2;}
+
+  /* Theme blocks */
+  .theme-block{margin-bottom:1.25rem;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .theme-title-bar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:var(--tbg,#f9f9f9);cursor:pointer;user-select:none;}
+  .theme-stripe{width:5px;height:32px;border-radius:3px;flex-shrink:0;background:var(--tc);}
+  .theme-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;color:var(--tc);}
+  .theme-num{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--g5);margin-left:auto;}
+  .theme-toggle{font-size:18px;color:var(--g5);margin-left:8px;transition:transform .2s;}
+  .theme-toggle.open{transform:rotate(180deg);}
+  .theme-body{background:white;padding:0;}
+
+  /* LS rows */
+  .ls-row{border-top:1px solid var(--g1);}
+  .ls-header{display:flex;align-items:center;gap:10px;padding:12px 20px;cursor:pointer;}
+  .ls-code{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--tc);min-width:42px;opacity:0.4;}
+  .ls-name{font-size:14px;font-weight:600;color:var(--g9);flex:1;}
+  .ls-count{font-size:11px;color:var(--g5);background:var(--g1);padding:3px 8px;border-radius:10px;}
+  .ls-chevron{font-size:14px;color:var(--g3);transition:transform .2s;}
+  .ls-chevron.open{transform:rotate(90deg);}
+
+  /* LJ table */
+  .lj-table{width:100%;border-collapse:collapse;}
+  .lj-table thead tr{background:var(--g1);}
+  .lj-table th{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--g5);padding:8px 16px;text-align:left;border-bottom:1px solid var(--g3);}
+  .lj-table th.phase-col{text-align:center;}
+  .lj-table td{padding:10px 16px;border-bottom:1px solid var(--g1);vertical-align:middle;}
+  .lj-table tr:last-child td{border-bottom:none;}
+  .lj-table tr:hover td{background:#FAFAFA;}
+
+  .lj-num{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--tc);opacity:0.5;}
+  .lj-name{font-size:13px;font-weight:600;color:var(--g9);}
+  .lj-sub{font-size:11px;color:var(--g5);margin-top:1px;}
+
+  /* Phase cells */
+  .phase-cell{text-align:center;}
+  .phase-chips{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:12px;text-decoration:none;transition:opacity .15s;white-space:nowrap;}
+  .chip:hover{opacity:0.8;}
+  .chip-E{background:#DBEAFE;color:#1e40af;}
+  .chip-TH{background:#DCFCE7;color:#166534;}
+  .chip-UE{background:#FEF3C7;color:#92400e;}
+  .chip-A{background:#F3E8FF;color:#6b21a8;}
+  .chip-VID{background:#E0F2FE;color:#0c4a6e;}
+  .chip-PPT{background:#FEE2E2;color:#991b1b;}
+  .chip-missing{background:var(--g1);color:var(--g3);cursor:default;border:1.5px dashed var(--g3);}
+  .chip-missing:hover{opacity:1;}
+
+  .no-results{text-align:center;padding:3rem;color:var(--g5);font-size:14px;}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--g5);text-decoration:none;margin-bottom:1.5rem;transition:color .15s;}
+  .back-btn:hover{color:var(--g9);}
+  .hidden{display:none!important;}
+
+  /* Aktualität */
+  .akt-zone{background:#FAFAFA;border-top:1.5px dashed var(--g3);padding:12px 20px;}
+  .akt-header{display:flex;align-items:center;gap:8px;margin-bottom:0;}
+  .akt-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g5);}
+  .akt-add-btn{font-size:11px;font-weight:600;border:0.5px dashed var(--g3);border-radius:8px;padding:4px 10px;background:none;cursor:pointer;color:var(--g5);transition:all .15s;margin-left:auto;}
+  .akt-add-btn:hover{background:white;border-color:var(--g7);color:var(--g9);}
+  .akt-form{background:white;border:1px solid var(--g3);border-radius:10px;padding:12px;margin-top:8px;display:none;flex-direction:column;gap:8px;}
+  .akt-form.open{display:flex;}
+  .akt-form input,.akt-form select{font-size:12px;border:1px solid var(--g3);border-radius:6px;padding:6px 10px;color:var(--g9);width:100%;}
+  .akt-form input:focus{outline:none;border-color:var(--g7);}
+  .akt-form-row{display:flex;gap:8px;}
+  .akt-save-btn{font-size:12px;font-weight:600;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;color:white;flex-shrink:0;}
+  .akt-cancel-btn{font-size:12px;border:1px solid var(--g3);border-radius:8px;padding:7px 12px;cursor:pointer;background:none;color:var(--g5);}
+  .akt-entries{margin-top:8px;display:flex;flex-direction:column;gap:5px;}
+  .akt-entry{display:flex;align-items:center;gap:8px;background:white;border:0.5px solid var(--g3);border-radius:8px;padding:7px 10px;}
+  .akt-entry-date{font-size:10px;color:var(--g5);white-space:nowrap;flex-shrink:0;}
+  .akt-entry-phase{font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;flex-shrink:0;}
+  .akt-entry-title{font-size:12px;font-weight:600;color:var(--g9);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .akt-entry-link{font-size:11px;color:#2980B9;text-decoration:none;flex-shrink:0;}
+  .akt-entry-link:hover{text-decoration:underline;}
+  .akt-entry-del{background:none;border:none;cursor:pointer;color:var(--g3);font-size:13px;flex-shrink:0;padding:2px;}
+  .akt-entry-del:hover{color:#e74c3c;}
+  .akt-archive-toggle{font-size:11px;color:var(--g5);background:none;border:none;cursor:pointer;padding:6px 0 2px;display:flex;align-items:center;gap:4px;}
+  .akt-archive-toggle:hover{color:var(--g9);}
+  .akt-archive{display:none;margin-top:4px;border-top:1px solid var(--g3);padding-top:6px;}
+  .akt-archive.open{display:block;}
+  .akt-block{padding:4px 0;}
+  .akt-cols{display:grid;grid-template-columns:1fr auto 1fr;gap:0;padding:6px 0 4px;}
+  .akt-col{padding:0 4px;}
+  .akt-col-divider{width:1px;background:var(--g3);margin:4px 8px;}
+  @media(max-width:700px){.akt-cols{grid-template-columns:1fr;}.akt-col-divider{width:100%;height:1px;margin:6px 0;}}
+  .akt-block-header{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+  .akt-block-icon{font-size:13px;}
+  .akt-block-label{font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--g7);}
+
+  .fp-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+  .fp-overlay.open { display:flex; }
+  .fp-panel { background:#fff; border-radius:16px; width:min(640px,94vw); max-height:82vh; display:flex; flex-direction:column; box-shadow:0 8px 40px rgba(0,0,0,.18); overflow:hidden; }
+  .fp-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; border-bottom:1px solid #e5e7eb; }
+  .fp-title { font-size:15px; font-weight:700; }
+  .fp-subtitle { font-size:11px; color:#6b7280; margin-top:2px; }
+  .fp-close { font-size:20px; cursor:pointer; color:#6b7280; background:none; border:none; padding:4px 8px; border-radius:6px; line-height:1; }
+  .fp-close:hover { background:#f3f4f6; color:#111; }
+  .fp-tabs { display:flex; gap:4px; padding:10px 16px 0; border-bottom:1px solid #e5e7eb; flex-wrap:wrap; }
+  .fp-tab { font-size:11px; font-weight:600; padding:6px 12px; border-radius:8px 8px 0 0; border:1px solid transparent; cursor:pointer; color:#6b7280; background:none; }
+  .fp-tab.active { background:#fff; border-color:#e5e7eb; border-bottom-color:#fff; color:#111; margin-bottom:-1px; }
+  .fp-body { overflow-y:auto; padding:12px 16px 16px; flex:1; }
+  .fp-list { display:flex; flex-direction:column; gap:5px; }
+  .fp-item { display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f3f4f6; border-radius:8px; text-decoration:none; color:#374151; font-size:13px; font-weight:500; transition:background .12s; border:1px solid transparent; }
+  .fp-item:hover { background:var(--fp-bg,#e8f0fe); border-color:var(--fp-tc,#2980b9); color:var(--fp-tc,#2980b9); }
+  .fp-item-ext { font-size:10px; font-weight:700; padding:2px 5px; border-radius:4px; flex-shrink:0; margin-left:auto; }
+  .fp-empty { font-size:13px; color:#6b7280; padding:20px; text-align:center; }
+  .chip { cursor:pointer; }
+  button.chip { font-family:inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-btn" href="index.html">← Zurück zum Portal</a>
+  <div class="lp-badge">&#128274; Lehrperson</div>
+  <div class="p1-title">Material&shy;übersicht</div>
+  <p class="p1-sub">ABU Lernportal · Alle Lernjobs nach AVIVA-Phasen</p>
+
+  <div class="rainbow">
+    <span style="background:#C0392B"></span><span style="background:#E67E22"></span>
+    <span style="background:#27AE60"></span><span style="background:#2980B9"></span>
+    <span style="background:#F39C12"></span><span style="background:#8E44AD"></span>
+    <span style="background:#6C3483"></span>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="filter-label">Phase</span>
+    <div class="filter-group">
+      <button class="phase-btn active" data-phase="ALL" onclick="setPhase('ALL')">Alle</button>
+      <button class="phase-btn" data-phase="E" onclick="setPhase('E')">[E] Einstieg</button>
+      <button class="phase-btn" data-phase="TH" onclick="setPhase('TH')">[TH] Theorie</button>
+      <button class="phase-btn" data-phase="UE" onclick="setPhase('UE')">[UE] Übung</button>
+      <button class="phase-btn" data-phase="A" onclick="setPhase('A')">[A] Abschluss</button>
+      <button class="phase-btn" data-phase="VID" onclick="setPhase('VID')">VID Video</button>
+      <button class="phase-btn" data-phase="PPT" onclick="setPhase('PPT')">PPT</button>
+    </div>
+    <div class="divider"></div>
+    <span class="filter-label">Thema</span>
+    <select id="themaFilter" onchange="filterThema()">
+      <option value="ALL">Alle Themen</option>
+      <option value="1">Thema 1 · Mein Lehrbeginn</option>
+      <option value="2">Thema 2 · Mein Geld</option>
+      <option value="3">Thema 3 · Meine Gesundheit</option>
+      <option value="4">Thema 4 · Unsere Schweiz</option>
+      <option value="5">Thema 5 · Unser Zusammenleben</option>
+      <option value="6">Thema 6 · Unsere Welt</option>
+      <option value="7">Thema 7 · Meine Zukunft</option>
+    </select>
+    <div class="divider"></div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--g5);cursor:pointer;">
+      <input type="checkbox" id="missingOnly" onchange="renderAll()" style="cursor:pointer;">
+      Nur fehlende anzeigen
+    </label>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- Content -->
+  <div id="content"></div>
+</div>
+
+<script>
+const PHASES = ['E','TH','UE','A','VID','PPT'];
+const PHASE_LABEL = {E:'Einstieg',TH:'Theorie',UE:'Übung',A:'Abschluss',VID:'Video',PPT:'Präsentation'};
+
+const THEMES = [
+  {id:1,name:'Mein Lehrbeginn',tc:'#C0392B',tbg:'#FDDBD9',ls:[
+    {id:'101',name:'Lehrvertrag & Rechte',files:{PPT:{label:'110_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},TH:{label:'110_[TH]_Theorie',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},UE:{label:'110_[UE]_Aufgaben',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},A:{label:'110_[A]_Selbstcheck',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+    {id:'102',name:'Rechtsgrundlagen',files:{PPT:{label:'120_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},TH:{label:'120_[TH]_Theorie',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},UE:{label:'120_[UE]_Aufgaben',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},VID:{label:'120_VID_[E]_Einstieg',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+    {id:'103',name:'Kommunikation & Konflikte',files:{PPT:{label:'130_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},TH:{label:'130_[TH]_Modelle',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+  ]},
+  {id:2,name:'Mein Geld',tc:'#E67E22',tbg:'#FCE9D4',ls:[
+    {id:'201',name:'Lohn & Budget',files:{PPT:{label:'210_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},TH:{label:'210_[TH]_Lohnausweis',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},UE:{label:'210_[UE]_Budgetplan',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},VID:{label:'210_VID_[E]_Budget',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},A:{label:'210_[A]_Quiz',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+    {id:'202',name:'Konsum & Werbung',files:{E:{label:'220_[E]_Einstieg',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},PPT:{label:'220_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},UE:{label:'220_[UE]_Analyse',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+    {id:'203',name:'Kaufvertrag',files:{PPT:{label:'230_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},TH:{label:'230_[TH]_Theorie',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},UE:{label:'230_[UE]_Fallbeispiele',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},A:{label:'230_[A]_Selbstcheck',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+    {id:'204',name:'Investition & Finanzierung',files:{PPT:{label:'240_PPT',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'},TH:{label:'240_[TH]_Finanzierung',url:'https://bldsg.sharepoint.com/:f:/t/ABULernportal'}}},
+  ]},
+  {id:3,name:'Meine Gesundheit',tc:'#27AE60',tbg:'#D4F7E2',ls:[
+    {id:'301',name:'Gesundheitsfaktoren',files:{PPT:{label:'310_PPT',url:'#'},TH:{label:'310_[TH]_Modelle',url:'#'},UE:{label:'310_[UE]_Aufgaben',url:'#'}}},
+    {id:'302',name:'Prävention',files:{E:{label:'320_[E]_Einstieg',url:'#'},PPT:{label:'320_PPT',url:'#'},UE:{label:'320_[UE]_Aufgaben',url:'#'}}},
+    {id:'303',name:'Krankenkasse & Versicherung',files:{PPT:{label:'330_PPT',url:'#'},TH:{label:'330_[TH]_Theorie',url:'#'},UE:{label:'330_[UE]_Fallbeispiele',url:'#'},A:{label:'330_[A]_Quiz',url:'#'}}},
+    {id:'304',name:'Stress, Sucht & Resilienz',files:{E:{label:'340_[E]_Einstieg',url:'#'},PPT:{label:'340_PPT',url:'#'},VID:{label:'340_VID_[TH]_Stress',url:'#'}}},
+    {id:'305',name:'Gewalt & Zivilcourage',files:{PPT:{label:'350_PPT',url:'#'},UE:{label:'350_[UE]_Szenarien',url:'#'}}},
+  ]},
+  {id:4,name:'Unsere Schweiz',tc:'#2980B9',tbg:'#D4E9F9',ls:[
+    {id:'401',name:'Demokratie & Politik',files:{PPT:{label:'410_PPT',url:'#'},TH:{label:'410_[TH]_System',url:'#'},UE:{label:'410_[UE]_Aufgaben',url:'#'},A:{label:'410_[A]_Quiz',url:'#'}}},
+    {id:'402',name:'Meinungsbildung & Medien',files:{E:{label:'420_[E]_Einstieg',url:'#'},PPT:{label:'420_PPT',url:'#'},VID:{label:'420_VID_[E]_Medien',url:'#'}}},
+    {id:'403',name:'Vielseitigkeit der Schweiz',files:{PPT:{label:'430_PPT',url:'#'},TH:{label:'430_[TH]_Regionen',url:'#'},UE:{label:'430_[UE]_Aufgaben',url:'#'}}},
+  ]},
+  {id:5,name:'Unser Zusammenleben',tc:'#F39C12',tbg:'#FCF0CD',ls:[
+    {id:'501',name:'Beziehungen',files:{E:{label:'510_[E]_Einstieg',url:'#'},PPT:{label:'510_PPT',url:'#'},UE:{label:'510_[UE]_Aufgaben',url:'#'}}},
+    {id:'502',name:'Ausziehen & Mietrecht',files:{PPT:{label:'520_PPT',url:'#'},TH:{label:'520_[TH]_Mietrecht',url:'#'},UE:{label:'520_[UE]_Fallbeispiele',url:'#'},A:{label:'520_[A]_Selbstcheck',url:'#'}}},
+    {id:'503',name:'Lebensmodelle',files:{PPT:{label:'530_PPT',url:'#'},TH:{label:'530_[TH]_Modelle',url:'#'}}},
+    {id:'504',name:'Multikulturell',files:{E:{label:'540_[E]_Einstieg',url:'#'},PPT:{label:'540_PPT',url:'#'},VID:{label:'540_VID_[TH]_Migration',url:'#'},UE:{label:'540_[UE]_Aufgaben',url:'#'}}},
+    {id:'505',name:'Gesellschaft',files:{PPT:{label:'550_PPT',url:'#'},TH:{label:'550_[TH]_Normen',url:'#'},UE:{label:'550_[UE]_Fallbeispiele',url:'#'}}},
+  ]},
+  {id:6,name:'Unsere Welt',tc:'#8E44AD',tbg:'#F5EEF8',ls:[
+    {id:'601',name:'Weltgeschehen',files:{E:{label:'610_[E]_Einstieg',url:'#'},PPT:{label:'610_PPT',url:'#'},VID:{label:'610_VID_[E]_News',url:'#'}}},
+    {id:'602',name:'Ökologie',files:{PPT:{label:'620_PPT',url:'#'},TH:{label:'620_[TH]_Klima',url:'#'},UE:{label:'620_[UE]_Aufgaben',url:'#'},A:{label:'620_[A]_Selbstcheck',url:'#'}}},
+    {id:'603',name:'Vernetzung',files:{PPT:{label:'630_PPT',url:'#'},TH:{label:'630_[TH]_Global',url:'#'},UE:{label:'630_[UE]_Aufgaben',url:'#'}}},
+    {id:'604',name:'Migration',files:{E:{label:'640_[E]_Einstieg',url:'#'},PPT:{label:'640_PPT',url:'#'},VID:{label:'640_VID_[TH]_Migration',url:'#'},UE:{label:'640_[UE]_Aufgaben',url:'#'}}},
+  ]},
+  {id:7,name:'Meine Zukunft',tc:'#6C3483',tbg:'#EBD5F7',ls:[
+    {id:'701',name:'Arbeitsmarkt',files:{PPT:{label:'710_PPT',url:'#'},TH:{label:'710_[TH]_Arbeitsmarkt',url:'#'},UE:{label:'710_[UE]_Aufgaben',url:'#'},A:{label:'710_[A]_Quiz',url:'#'}}},
+    {id:'702',name:'Bewerbung',files:{PPT:{label:'720_PPT',url:'#'},TH:{label:'720_[TH]_Bewerbung',url:'#'},UE:{label:'720_[UE]_Lebenslauf',url:'#'},A:{label:'720_[A]_Selbstcheck',url:'#'}}},
+    {id:'703',name:'Steuern & Vorsorge',files:{PPT:{label:'730_PPT',url:'#'},TH:{label:'730_[TH]_Steuern',url:'#'},UE:{label:'730_[UE]_Steuererklarung',url:'#'},VID:{label:'730_VID_[TH]_Vorsorge',url:'#'},A:{label:'730_[A]_Quiz',url:'#'}}},
+    {id:'704',name:'Zukunftsplanung',files:{E:{label:'740_[E]_Einstieg',url:'#'},PPT:{label:'740_PPT',url:'#'},UE:{label:'740_[UE]_Aufgaben',url:'#'}}},
+  ]},
+];
+
+const INVENTORY = {"101": {"TH": [{"name": "101_[TH]_Berufsbildung_(K1.1_hep).pdf", "short": "Berufsbildung (K1.1 hep)", "ext": "pdf"}, {"name": "101_[TH]_Berufsbildung_[Fragen]_(1.1_bis_1.1).pdf", "short": "Berufsbildung [Fragen] (1.1 bis 1.1)", "ext": "pdf"}, {"name": "101_[TH]_Gesetzliche_Grundlage_(K1.2_hep).pdf", "short": "Gesetzliche Grundlage (K1.2 hep)", "ext": "pdf"}, {"name": "101_[TH]_Gesetzliche_Grundlage_[Fragen]_(1.2_bis_1.2).pdf", "short": "Gesetzliche Grundlage [Fragen] (1.2 bis 1.2)", "ext": "pdf"}, {"name": "101_[TH]_Lehrvertrag_(K1.2_hep).pdf", "short": "Lehrvertrag (K1.2 hep)", "ext": "pdf"}, {"name": "101_[TH]_Lehrvertrag_[Fragen]_(1.3_bis_1.29).pdf", "short": "Lehrvertrag [Fragen] (1.3 bis 1.29)", "ext": "pdf"}], "UE": [{"name": "101_[UE]_Kapitel 1_A10_Lernende_Aussagen.html", "short": "A10 Lernende Aussagen", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A11_Lohn_Arbeitszeit.html", "short": "A11 Lohn Arbeitszeit", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A12_Rechtsquellen.html", "short": "A12 Rechtsquellen", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A13_Ferienregelung.html", "short": "A13 Ferienregelung", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A14_Lehrvertrag_Ende.html", "short": "A14 Lehrvertrag Ende", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A15_Lehrabbruch.html", "short": "A15 Lehrabbruch", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A1_Berufsbildung_Gesetze.html", "short": "A1 Berufsbildung Gesetze", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A2_Mein_Lehrvertrag.html", "short": "A2 Mein Lehrvertrag", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A3_Vertragspflichten.html", "short": "A3 Vertragspflichten", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A4_Lehrverhaeltnis_Faelle.html", "short": "A4 Lehrverhaeltnis Faelle", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A5_Lernorte.html", "short": "A5 Lernorte", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A6_Zustaendigkeit_Berufsbildung.html", "short": "A6 Zustaendigkeit Berufsbildung", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A7_Gesetze_Berufsbildung.html", "short": "A7 Gesetze Berufsbildung", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A8_Pflichtverletzungen.html", "short": "A8 Pflichtverletzungen", "ext": "html"}, {"name": "101_[UE]_Kapitel 1_A9_Lehrvertrag_Aussagen.html", "short": "A9 Lehrvertrag Aussagen", "ext": "html"}]}, "102": {"TH": [{"name": "102_[TH]_Personenrecht_(K1.5_hep).pdf", "short": "Personenrecht (K1.5 hep)", "ext": "pdf"}, {"name": "102_[TH]_Personenrecht_[Fragen]_(1.44_bis_1.51).pdf", "short": "Personenrecht [Fragen] (1.44 bis 1.51)", "ext": "pdf"}, {"name": "102_[TH]_Rechtsgrundlage_(K1.4_hep).pdf", "short": "Rechtsgrundlage (K1.4 hep)", "ext": "pdf"}, {"name": "102_[TH]_Rechtsgrundlage_[Fragen]_(1.34_bis_1.43).pdf", "short": "Rechtsgrundlage [Fragen] (1.34 bis 1.43)", "ext": "pdf"}, {"name": "102_[TH]_Strafrecht_(K1.6_hep).pdf", "short": "Strafrecht (K1.6 hep)", "ext": "pdf"}, {"name": "102_[TH]_Strafrecht_[Fragen]_(1.52_bis_1.58).pdf", "short": "Strafrecht [Fragen] (1.52 bis 1.58)", "ext": "pdf"}], "UE": [{"name": "102_[UE]_Kapitel 1_A16_Recht_Moral_Brauch.html", "short": "A16 Recht Moral Brauch", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A17_Privates_Oeffentliches_Recht.html", "short": "A17 Privates Oeffentliches Recht", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A18_Rechte_Pflichten.html", "short": "A18 Rechte Pflichten", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A19_Rechtsgrundsaetze.html", "short": "A19 Rechtsgrundsaetze", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A20_Busse_Einkommen.html", "short": "A20 Busse Einkommen", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A21_Zivil_Strafprozess.html", "short": "A21 Zivil Strafprozess", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A22_Personenrecht.html", "short": "A22 Personenrecht", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A23_Rechtsfaelle_Personenrecht.html", "short": "A23 Rechtsfaelle Personenrecht", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A24_Strafrecht.html", "short": "A24 Strafrecht", "ext": "html"}, {"name": "102_[UE]_Kapitel 1_A25_Rechtsgrundlagen_Faelle.html", "short": "A25 Rechtsgrundlagen Faelle", "ext": "html"}]}, "103": {"TH": [{"name": "103_[TH]_Kommunikation_(K1.3_hep).pdf", "short": "Kommunikation (K1.3 hep)", "ext": "pdf"}, {"name": "103_[TH]_Kommunikation_[Fragen]_(1.30_bis_1.33).pdf", "short": "Kommunikation [Fragen] (1.30 bis 1.33)", "ext": "pdf"}]}, "201": {"TH": [{"name": "201_[TH]_Betreibung_(K2.4_hep).pdf", "short": "Betreibung (K2.4 hep)", "ext": "pdf"}, {"name": "201_[TH]_Betreibung_[Fragen]_(2.29_bis_2.40).pdf", "short": "Betreibung [Fragen] (2.29 bis 2.40)", "ext": "pdf"}, {"name": "201_[TH]_Budget_(K2.1_hep).pdf", "short": "Budget (K2.1 hep)", "ext": "pdf"}, {"name": "201_[TH]_Budget_[Fragen]_(2.4_bis_2.4).pdf", "short": "Budget [Fragen] (2.4 bis 2.4)", "ext": "pdf"}, {"name": "201_[TH]_Lohn_(K2.1_hep).pdf", "short": "Lohn (K2.1 hep)", "ext": "pdf"}, {"name": "201_[TH]_Lohn_[Fragen]_(2.1_bis_2.3).pdf", "short": "Lohn [Fragen] (2.1 bis 2.3)", "ext": "pdf"}, {"name": "201_[TH]_Verschuldung_(K2.1_hep).pdf", "short": "Verschuldung (K2.1 hep)", "ext": "pdf"}, {"name": "201_[TH]_Verschuldung_[Fragen]_(2.5_bis_2.5).pdf", "short": "Verschuldung [Fragen] (2.5 bis 2.5)", "ext": "pdf"}, {"name": "201_[TH]_Zahlungsverkehr_(K2.2_hep).pdf", "short": "Zahlungsverkehr (K2.2 hep)", "ext": "pdf"}, {"name": "201_[TH]_Zahlungsverkehr_[Fragen]_(2.6_bis_2.10).pdf", "short": "Zahlungsverkehr [Fragen] (2.6 bis 2.10)", "ext": "pdf"}]}, "202": {"TH": [{"name": "202_[TH]_Beduerfnis_Gueterarten_(K2.7_hep).pdf", "short": "Beduerfnis Gueterarten (K2.7 hep)", "ext": "pdf"}, {"name": "202_[TH]_Bed├╝rfnis_G├╝terarten_[Fragen]_(2.52_bis_2.58).pdf", "short": "Bed├╝rfnis G├╝terarten [Fragen] (2.52 bis 2.58)", "ext": "pdf"}], "UE": [{"name": "202_[UE]_Kapitel 2_A26_Oeko_Label.html", "short": "A26 Oeko Label", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A27_Maslow_Beduerfnisse.html", "short": "A27 Maslow Beduerfnisse", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A28_Geld_Sexualitaet.html", "short": "A28 Geld Sexualitaet", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A29_Beduerfnisarten.html", "short": "A29 Beduerfnisarten", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A30_Gueterarten.html", "short": "A30 Gueterarten", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A31_Preisbildung.html", "short": "A31 Preisbildung", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A32_Angebot_Nachfrage.html", "short": "A32 Angebot Nachfrage", "ext": "html"}, {"name": "202_[UE]_Kapitel 2_A33_Marktgleichgewicht.html", "short": "A33 Marktgleichgewicht", "ext": "html"}, {"name": "202_[UE]_KONSUM.zip", "short": "KONSUM.zip", "ext": "zip"}]}, "203": {"TH": [{"name": "203_[TH]_Kaufvertragsarten_(K2.5_hep).pdf", "short": "Kaufvertragsarten (K2.5 hep)", "ext": "pdf"}, {"name": "203_[TH]_Kaufvertragsarten_[Fragen]_(2.41_bis_2.45).pdf", "short": "Kaufvertragsarten [Fragen] (2.41 bis 2.45)", "ext": "pdf"}, {"name": "203_[TH]_Nachhaltig_einkaufen_(K2.6_hep).pdf", "short": "Nachhaltig einkaufen (K2.6 hep)", "ext": "pdf"}, {"name": "203_[TH]_Nachhaltig_einkaufen_[Fragen]_(2.50_bis_2.51).pdf", "short": "Nachhaltig einkaufen [Fragen] (2.50 bis 2.51)", "ext": "pdf"}, {"name": "203_[TH]_Vertragsrecht_(K2.3_hep).pdf", "short": "Vertragsrecht (K2.3 hep)", "ext": "pdf"}, {"name": "203_[TH]_Vertragsrecht_1_(K2.3_hep).pdf", "short": "Vertragsrecht 1 (K2.3 hep)", "ext": "pdf"}, {"name": "203_[TH]_Vertragsrecht_1_[Fragen]_(2.11_bis_2.19).pdf", "short": "Vertragsrecht 1 [Fragen] (2.11 bis 2.19)", "ext": "pdf"}, {"name": "203_[TH]_Vertragsrecht_2_(K2.4_hep).pdf", "short": "Vertragsrecht 2 (K2.4 hep)", "ext": "pdf"}, {"name": "203_[TH]_Vertragsrecht_2_[Fragen]_(2.20_bis_2.28).pdf", "short": "Vertragsrecht 2 [Fragen] (2.20 bis 2.28)", "ext": "pdf"}], "UE": [{"name": "203_[UE]_Kapitel 2_A11_Vertragsrecht_Faelle.html", "short": "A11 Vertragsrecht Faelle", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A12_Toeffkauf.html", "short": "A12 Toeffkauf", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A13_Wohnungsverkauf.html", "short": "A13 Wohnungsverkauf", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A14_Offerten.html", "short": "A14 Offerten", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A15_Kaufvertrag_Gueltigkeit.html", "short": "A15 Kaufvertrag Gueltigkeit", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A16_Maengelruege.html", "short": "A16 Maengelruege", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A17_Kaufvertrag_Aussagen.html", "short": "A17 Kaufvertrag Aussagen", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A18_Internetkauf.html", "short": "A18 Internetkauf", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A19_Kaufvertrag_Faelle.html", "short": "A19 Kaufvertrag Faelle", "ext": "html"}, {"name": "203_[UE]_Kapitel 2_A20_Quittung.html", "short": "A20 Quittung", "ext": "html"}]}, "204": {"TH": [{"name": "204_[TH]_Finanzierungsarten_(K2.5_hep).pdf", "short": "Finanzierungsarten (K2.5 hep)", "ext": "pdf"}, {"name": "204_[TH]_Finanzierungsarten_[Fragen]_(2.46_bis_2.49).pdf", "short": "Finanzierungsarten [Fragen] (2.46 bis 2.49)", "ext": "pdf"}], "UE": [{"name": "204_[UE]_Kapitel 2_A22_Finanzierungsarten.html", "short": "A22 Finanzierungsarten", "ext": "html"}, {"name": "204_[UE]_Kapitel 2_A23_Kaufarten.html", "short": "A23 Kaufarten", "ext": "html"}, {"name": "204_[UE]_Kapitel 2_A24_Leasing.html", "short": "A24 Leasing", "ext": "html"}, {"name": "204_[UE]_Kapitel 2_A25_Autofinanzierung.html", "short": "A25 Autofinanzierung", "ext": "html"}]}, "301": {"TH": [{"name": "301_[TH]_Gesundheit_(K4.1_hep).pdf", "short": "Gesundheit (K4.1 hep)", "ext": "pdf"}, {"name": "301_[TH]_Gesundheit_[Fragen]_(4.6_bis_4.8).pdf", "short": "Gesundheit [Fragen] (4.6 bis 4.8)", "ext": "pdf"}], "UE": [{"name": "301_[UE]_Kapitel 4_A1_Risiken_Skitour.html", "short": "A1 Risiken Skitour", "ext": "html"}, {"name": "301_[UE]_Kapitel 4_A6_Gesundheit.html", "short": "A6 Gesundheit", "ext": "html"}, {"name": "301_[UE]_Kapitel 4_A7_Sprichwoerter.html", "short": "A7 Sprichwoerter", "ext": "html"}, {"name": "301_[UE]_Kapitel 4_A8_Wohlergehen.html", "short": "A8 Wohlergehen", "ext": "html"}]}, "302": {"TH": [{"name": "302_[TH]_Haftpflichtversicherung_(K4.2_hep).pdf", "short": "Haftpflichtversicherung (K4.2 hep)", "ext": "pdf"}, {"name": "302_[TH]_Haftpflichtversicherung_[Fragen]_(4.29_bis_4.33).pdf", "short": "Haftpflichtversicherung [Fragen] (4.29 bis 4.33)", "ext": "pdf"}, {"name": "302_[TH]_Risiken_(K4.1_hep).pdf", "short": "Risiken (K4.1 hep)", "ext": "pdf"}, {"name": "302_[TH]_Risiken_[Fragen]_(4.1_bis_4.5).pdf", "short": "Risiken [Fragen] (4.1 bis 4.5)", "ext": "pdf"}, {"name": "302_[TH]_Sachversicherung_(K4.2_hep).pdf", "short": "Sachversicherung (K4.2 hep)", "ext": "pdf"}, {"name": "302_[TH]_Sachversicherung_[Fragen]_(4.24_bis_4.28).pdf", "short": "Sachversicherung [Fragen] (4.24 bis 4.28)", "ext": "pdf"}], "UE": [{"name": "302_[UE]_Kapitel 4_A2_Neue_Technologien.html", "short": "A2 Neue Technologien", "ext": "html"}, {"name": "302_[UE]_Kapitel 4_A4_Bewegung_Ernaehrung.html", "short": "A4 Bewegung Ernaehrung", "ext": "html"}, {"name": "302_[UE]_Kapitel 4_A5_Praevention_Lueckentext.html", "short": "A5 Praevention Lueckentext", "ext": "html"}, {"name": "302_[UE]_Kapitel 4_A9_Lebensstil.html", "short": "A9 Lebensstil", "ext": "html"}]}, "303": {"TH": [{"name": "303_[TH]_Versicherung_(K4.2_hep).pdf", "short": "Versicherung (K4.2 hep)", "ext": "pdf"}, {"name": "303_[TH]_Versicherung_[Fragen]_(4.9_bis_4.15).pdf", "short": "Versicherung [Fragen] (4.9 bis 4.15)", "ext": "pdf"}], "UE": [{"name": "303_[UE]_Kapitel 4_A10_Solidaritaetsprinzip.html", "short": "A10 Solidaritaetsprinzip", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A11_Drei_Saeulen.html", "short": "A11 Drei Saeulen", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A12_Versicherungen_Tabelle.html", "short": "A12 Versicherungen Tabelle", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A13_Krankenversicherung.html", "short": "A13 Krankenversicherung", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A14_Praemien_sparen.html", "short": "A14 Praemien sparen", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A15_Krankenkasse_finden.html", "short": "A15 Krankenkasse finden", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A16_Franchise_Selbstbehalt.html", "short": "A16 Franchise Selbstbehalt", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A17_Grund_Zusatzversicherung.html", "short": "A17 Grund Zusatzversicherung", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A18_Unfall_Krankheit.html", "short": "A18 Unfall Krankheit", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A19_SUVA_Vorschriften.html", "short": "A19 SUVA Vorschriften", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A21_Versicherungsfaelle.html", "short": "A21 Versicherungsfaelle", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A23_Unterversicherung.html", "short": "A23 Unterversicherung", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A24_Versicherungsbegriffe.html", "short": "A24 Versicherungsbegriffe", "ext": "html"}, {"name": "303_[UE]_Kapitel 4_A25_Selbstbehalt_Junglenker.html", "short": "A25 Selbstbehalt Junglenker", "ext": "html"}]}, "304": {"TH": [{"name": "304_[TH]_Umgang_Stress_(K7.6_hep).pdf", "short": "Umgang Stress (K7.6 hep)", "ext": "pdf"}, {"name": "304_[TH]_Umgang_Stress_[Fragen]_(7.44_bis_7.47).pdf", "short": "Umgang Stress [Fragen] (7.44 bis 7.47)", "ext": "pdf"}], "UE": [{"name": "304_[UE]_Kapitel 4_A3_Genuss_und_Sucht.html", "short": "A3 Genuss und Sucht", "ext": "html"}]}, "401": {"TH": [{"name": "401_[TH]_Aufgaben_Staat_[Fragen]_(3.5_bis_3.6).pdf", "short": "Aufgaben Staat [Fragen] (3.5 bis 3.6)", "ext": "pdf"}, {"name": "401_[TH]_Entstehung_Gesetz_(K3.1_hep).pdf", "short": "Entstehung Gesetz (K3.1 hep)", "ext": "pdf"}, {"name": "401_[TH]_Entstehung_Gesetz_[Fragen]_(3.51_bis_3.55).pdf", "short": "Entstehung Gesetz [Fragen] (3.51 bis 3.55)", "ext": "pdf"}, {"name": "401_[TH]_Gewaltenteilung_(K3.6_hep).pdf", "short": "Gewaltenteilung (K3.6 hep)", "ext": "pdf"}, {"name": "401_[TH]_Gewaltenteilung_[Fragen]_(3.11_bis_3.28).pdf", "short": "Gewaltenteilung [Fragen] (3.11 bis 3.28)", "ext": "pdf"}, {"name": "401_[TH]_Merkmal_Staat_[Fragen]_(3.4_bis_3.4).pdf", "short": "Merkmal Staat [Fragen] (3.4 bis 3.4)", "ext": "pdf"}, {"name": "401_[TH]_Politische_Instrumente_(K3.9_hep).pdf", "short": "Politische Instrumente (K3.9 hep)", "ext": "pdf"}, {"name": "401_[TH]_Politische_Instrumente_[Fragen]_(3.42_bis_3.50).pdf", "short": "Politische Instrumente [Fragen] (3.42 bis 3.50)", "ext": "pdf"}, {"name": "401_[TH]_Politische_Pflichten_(K3.7_hep).pdf", "short": "Politische Pflichten (K3.7 hep)", "ext": "pdf"}, {"name": "401_[TH]_Politische_Pflichten_[Fragen]_(3.29_bis_3.30).pdf", "short": "Politische Pflichten [Fragen] (3.29 bis 3.30)", "ext": "pdf"}, {"name": "401_[TH]_Staatsformen_(K3.5_hep).pdf", "short": "Staatsformen (K3.5 hep)", "ext": "pdf"}, {"name": "401_[TH]_Staatsformen_[Fragen]_(3.7_bis_3.10).pdf", "short": "Staatsformen [Fragen] (3.7 bis 3.10)", "ext": "pdf"}, {"name": "401_[TH]_Stimmen_Waehlen_(K3.8_hep).pdf", "short": "Stimmen Waehlen (K3.8 hep)", "ext": "pdf"}, {"name": "401_[TH]_Stimmen_W├ñhlen_[Fragen]_(3.31_bis_3.41).pdf", "short": "Stimmen W├ñhlen [Fragen] (3.31 bis 3.41)", "ext": "pdf"}], "UE": [{"name": "401_[UE]_Kapitel 3_A10_Aemter_Gewalten.html", "short": "A10 Aemter Gewalten", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A11_Aufgaben_Bund_Kanton_Gemeinde.html", "short": "A11 Aufgaben Bund Kanton Gemeinde", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A13_Parlament.html", "short": "A13 Parlament", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A14_Staende_Nationalrat.html", "short": "A14 Staende Nationalrat", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A15_Bundesrat.html", "short": "A15 Bundesrat", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A16_Konkordanz.html", "short": "A16 Konkordanz", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A17_Rechte_und_Pflichten.html", "short": "A17 Rechte und Pflichten", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A18_Grundrechte.html", "short": "A18 Grundrechte", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A19_Weitere_Grundrechte.html", "short": "A19 Weitere Grundrechte", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A20_Stimmrecht.html", "short": "A20 Stimmrecht", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A21_Wahl_Mehrheiten.html", "short": "A21 Wahl Mehrheiten", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A22_Formen_von_Mehr.html", "short": "A22 Formen von Mehr", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A23_Proporzwahl.html", "short": "A23 Proporzwahl", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A24_Wahlverfahren.html", "short": "A24 Wahlverfahren", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A25_Wahllisten.html", "short": "A25 Wahllisten", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A26_Klassensprecherwahl.html", "short": "A26 Klassensprecherwahl", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A27_Initiative_Referendum.html", "short": "A27 Initiative Referendum", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A28_Doppeltes_Mehr.html", "short": "A28 Doppeltes Mehr", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A29_Gesetzgebung.html", "short": "A29 Gesetzgebung", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A2_Schweizer_Geschichte.html", "short": "A2 Schweizer Geschichte", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A30_Parteien_Smartspider.html", "short": "A30 Parteien Smartspider", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A35_Waehleranteile.html", "short": "A35 Waehleranteile", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A36_Verbaende.html", "short": "A36 Verbaende", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A37_Branchenverbaende.html", "short": "A37 Branchenverbaende", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A3_Bundesverfassung.html", "short": "A3 Bundesverfassung", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A5_Staatsformen.html", "short": "A5 Staatsformen", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A6_Regierungsformen.html", "short": "A6 Regierungsformen", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A7_Demokratie_Diktatur.html", "short": "A7 Demokratie Diktatur", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A8_Gewaltenteilung.html", "short": "A8 Gewaltenteilung", "ext": "html"}, {"name": "401_[UE]_Kapitel 3_A9_Ebenen_und_Gewalten.html", "short": "A9 Ebenen und Gewalten", "ext": "html"}]}, "402": {"TH": [{"name": "402_[TH]_Interessengruppen_(K3.11_hep).pdf", "short": "Interessengruppen (K3.11 hep)", "ext": "pdf"}, {"name": "402_[TH]_Interessengruppen_[Fragen]_(3.56_bis_3.65).pdf", "short": "Interessengruppen [Fragen] (3.56 bis 3.65)", "ext": "pdf"}], "UE": [{"name": "402_[UE]_Kapitel 3_A12_Massenmedien.html", "short": "A12 Massenmedien", "ext": "html"}, {"name": "402_[UE]_Kapitel 3_A31_Links_Rechts.html", "short": "A31 Links Rechts", "ext": "html"}, {"name": "402_[UE]_Kapitel 3_A32_Parteienspektrum.html", "short": "A32 Parteienspektrum", "ext": "html"}, {"name": "402_[UE]_Kapitel 3_A33_Politische_Haltungen.html", "short": "A33 Politische Haltungen", "ext": "html"}, {"name": "402_[UE]_Kapitel 3_A34_Parteien_Ansichten.html", "short": "A34 Parteien Ansichten", "ext": "html"}]}, "403": {"TH": [{"name": "403_[TH]_Geschichte_CH_(K3.2._hep).pdf", "short": "Geschichte CH (K3.2. hep)", "ext": "pdf"}, {"name": "403_[TH]_Geschichte_CH_[Fragen]_(3.1_bis_3.3).pdf", "short": "Geschichte CH [Fragen] (3.1 bis 3.3)", "ext": "pdf"}, {"name": "403_[TH]_Heimat_(K3.1_hep).pdf", "short": "Heimat (K3.1 hep)", "ext": "pdf"}], "UE": [{"name": "403_[UE]_Kapitel 3_A1_Heimat.html", "short": "A1 Heimat", "ext": "html"}, {"name": "403_[UE]_Kapitel 3_A4_Eckdaten_Schweiz.html", "short": "A4 Eckdaten Schweiz", "ext": "html"}]}, "501": {"TH": [{"name": "501_[TH]_Sexualitaet_(K6.1_hep).pdf", "short": "Sexualitaet (K6.1 hep)", "ext": "pdf"}], "UE": [{"name": "501_[UE]_Kapitel 6_A1_Sexualitaet.html", "short": "A1 Sexualitaet", "ext": "html"}, {"name": "501_[UE]_Kapitel 6_A2_Zusammenleben.html", "short": "A2 Zusammenleben", "ext": "html"}]}, "502": {"TH": [{"name": "502_[TH]_Wohnen_Mieten_(K6.3_hep).pdf", "short": "Wohnen Mieten (K6.3 hep)", "ext": "pdf"}, {"name": "502_[TH]_Wohnen_Mieten_[Fragen]_(6.42_bis_6.66).pdf", "short": "Wohnen Mieten [Fragen] (6.42 bis 6.66)", "ext": "pdf"}], "UE": [{"name": "502_[UE]_Kapitel 6_A17_Wohnformen.html", "short": "A17 Wohnformen", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A18_Mietkaution.html", "short": "A18 Mietkaution", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A19_Kautionsversicherung.html", "short": "A19 Kautionsversicherung", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A20_Uebernahmeprotokoll.html", "short": "A20 Uebernahmeprotokoll", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A21_Mietrecht_Aussagen.html", "short": "A21 Mietrecht Aussagen", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A22_Mieter_Vermieter_Pflichten.html", "short": "A22 Mieter Vermieter Pflichten", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A23_Mieterhaftung.html", "short": "A23 Mieterhaftung", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A24_Maengel_Wohnung.html", "short": "A24 Maengel Wohnung", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A25_Heizung_Mangel.html", "short": "A25 Heizung Mangel", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A26_OR_Miete.html", "short": "A26 OR Miete", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A27_Wohnungskuendigung.html", "short": "A27 Wohnungskuendigung", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A28_Untermiete.html", "short": "A28 Untermiete", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A29_Wohnungsabgabe.html", "short": "A29 Wohnungsabgabe", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A30_Mietzinserhoehung.html", "short": "A30 Mietzinserhoehung", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A31_Mieterschutz.html", "short": "A31 Mieterschutz", "ext": "html"}, {"name": "502_[UE]_Kapitel 6_A32_Versicherungen_Wohnung.html", "short": "A32 Versicherungen Wohnung", "ext": "html"}]}, "503": {"TH": [{"name": "503_[TH]_Ehe_(K6.2_hep).pdf", "short": "Ehe (K6.2 hep)", "ext": "pdf"}, {"name": "503_[TH]_Ehe_[Fragen]_(6.9_bis_6.27).pdf", "short": "Ehe [Fragen] (6.9 bis 6.27)", "ext": "pdf"}, {"name": "503_[TH]_Erbrecht_(K6.2_hep).pdf", "short": "Erbrecht (K6.2 hep)", "ext": "pdf"}, {"name": "503_[TH]_Erbrecht_[Fragen]_(6.35_bis_6.41).pdf", "short": "Erbrecht [Fragen] (6.35 bis 6.41)", "ext": "pdf"}, {"name": "503_[TH]_Konkubinat_[Fragen]_(6.5_bis_6.8).pdf", "short": "Konkubinat [Fragen] (6.5 bis 6.8)", "ext": "pdf"}, {"name": "503_[TH]_Rollenteilung_(K6.2_hep).pdf", "short": "Rollenteilung (K6.2 hep)", "ext": "pdf"}, {"name": "503_[TH]_Rollenteilung_[Fragen]_(6.1_bis_6.4).pdf", "short": "Rollenteilung [Fragen] (6.1 bis 6.4)", "ext": "pdf"}, {"name": "503_[TH]_Scheidung_(K6.2_hep).pdf", "short": "Scheidung (K6.2 hep)", "ext": "pdf"}, {"name": "503_[TH]_Scheidung_[Fragen]_(6.28_bis_6.34).pdf", "short": "Scheidung [Fragen] (6.28 bis 6.34)", "ext": "pdf"}], "UE": [{"name": "503_[UE]_Kapitel 6_A10_Kindesverhaeltnis.html", "short": "A10 Kindesverhaeltnis", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A11_Gueterstaende.html", "short": "A11 Gueterstaende", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A12_Errungenschaft_Eigengut.html", "short": "A12 Errungenschaft Eigengut", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A13_Gueterrecht_Aussagen.html", "short": "A13 Gueterrecht Aussagen", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A14_Gueterrecht_Erbe.html", "short": "A14 Gueterrecht Erbe", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A15_Erbrecht_Tochter.html", "short": "A15 Erbrecht Tochter", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A16_Gueterrecht_Scheidung.html", "short": "A16 Gueterrecht Scheidung", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A3_Konkubinat.html", "short": "A3 Konkubinat", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A4_Ehe_Konkubinat.html", "short": "A4 Ehe Konkubinat", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A5_Verlobung_Heirat.html", "short": "A5 Verlobung Heirat", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A6_Familienrecht_Aussagen.html", "short": "A6 Familienrecht Aussagen", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A7_Wohnort_Ehe.html", "short": "A7 Wohnort Ehe", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A8_Haushaltsgeld.html", "short": "A8 Haushaltsgeld", "ext": "html"}, {"name": "503_[UE]_Kapitel 6_A9_Elterliche_Sorge.html", "short": "A9 Elterliche Sorge", "ext": "html"}]}, "602": {"TH": [{"name": "602_[TH]_Klimaveraenderung_(K4.3_hep).pdf", "short": "Klimaveraenderung (K4.3 hep)", "ext": "pdf"}, {"name": "602_[TH]_Klimaver├ñnderung_[Fragen]_(4.39_bis_4.44).pdf", "short": "Klimaver├ñnderung [Fragen] (4.39 bis 4.44)", "ext": "pdf"}, {"name": "602_[TH]_Ressourcenverbrauch_(K4.3_hep).pdf", "short": "Ressourcenverbrauch (K4.3 hep)", "ext": "pdf"}, {"name": "602_[TH]_Ressourcenverbrauch_[Fragen]_(4.34_bis_4.38).pdf", "short": "Ressourcenverbrauch [Fragen] (4.34 bis 4.38)", "ext": "pdf"}], "UE": [{"name": "602_[UE]_Kapitel 4_A26_Oekologischer_Fussabdruck.html", "short": "A26 Oekologischer Fussabdruck", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A27_Fossile_Energietraeger.html", "short": "A27 Fossile Energietraeger", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A28_Energieverbrauch.html", "short": "A28 Energieverbrauch", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A29_Wasser.html", "short": "A29 Wasser", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A30_Wassermangel.html", "short": "A30 Wassermangel", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A31_Wasserverbrauch.html", "short": "A31 Wasserverbrauch", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A32_Wasser_sparen.html", "short": "A32 Wasser sparen", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A33_Persoenlicher_Wasserverbrauch.html", "short": "A33 Persoenlicher Wasserverbrauch", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A34_Treibhauseffekt.html", "short": "A34 Treibhauseffekt", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A35_Globale_Erwaermung.html", "short": "A35 Globale Erwaermung", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A36_Umweltinstrumente.html", "short": "A36 Umweltinstrumente", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A37_Nachhaltigkeit.html", "short": "A37 Nachhaltigkeit", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A38_2000_Watt_Gesellschaft.html", "short": "A38 2000 Watt Gesellschaft", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A39_Energiestrategie.html", "short": "A39 Energiestrategie", "ext": "html"}, {"name": "602_[UE]_Kapitel 4_A40_Energiestrategie_Bereiche.html", "short": "A40 Energiestrategie Bereiche", "ext": "html"}]}, "603": {"TH": [{"name": "603_[TH]_Bilaterale_Vertraege_(K5.2_hep).pdf", "short": "Bilaterale Vertraege (K5.2 hep)", "ext": "pdf"}, {"name": "603_[TH]_Bilaterale_Vertr├ñge_[Fragen]_(5.15_bis_5.20).pdf", "short": "Bilaterale Vertr├ñge [Fragen] (5.15 bis 5.20)", "ext": "pdf"}, {"name": "603_[TH]_EU_(K5.1_hep).pdf", "short": "EU (K5.1 hep)", "ext": "pdf"}, {"name": "603_[TH]_EU_[Fragen]_(5.1_bis_5.14).pdf", "short": "EU [Fragen] (5.1 bis 5.14)", "ext": "pdf"}, {"name": "603_[TH]_Globalisierung_(K7.8_hep).pdf", "short": "Globalisierung (K7.8 hep)", "ext": "pdf"}, {"name": "603_[TH]_Globalisierung_[Fragen]_(7.73_bis_7.76).pdf", "short": "Globalisierung [Fragen] (7.73 bis 7.76)", "ext": "pdf"}, {"name": "603_[TH]_Internationale_Organisation_(K5.3_hep).pdf", "short": "Internationale Organisation (K5.3 hep)", "ext": "pdf"}, {"name": "603_[TH]_Internationale_Organisation_[Fragen]_(5.21_bis_5.27).pdf", "short": "Internationale Organisation [Fragen] (5.21 bis 5.27)", "ext": "pdf"}], "UE": [{"name": "603_[UE]_Kapitel 5_A10_EU_Beitritt.html", "short": "A10 EU Beitritt", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A11_Meinung_EU_Beitritt.html", "short": "A11 Meinung EU Beitritt", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A12_Bilaterale_Vertraege.html", "short": "A12 Bilaterale Vertraege", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A13_Bilaterale_I.html", "short": "A13 Bilaterale I", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A14_Bilaterale_II.html", "short": "A14 Bilaterale II", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A15_Bilaterale_Dossiers.html", "short": "A15 Bilaterale Dossiers", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A16_Bilateraler_Weg.html", "short": "A16 Bilateraler Weg", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A17_Personenfreizuegigkeit.html", "short": "A17 Personenfreizuegigkeit", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A18_UNO_NATO_WTO.html", "short": "A18 UNO NATO WTO", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A19_NGO_Ziele.html", "short": "A19 NGO Ziele", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A1_EU_Flagge.html", "short": "A1 EU Flagge", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A20_IKRK_Symbole.html", "short": "A20 IKRK Symbole", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A21_Industrie_Entwicklungsland.html", "short": "A21 Industrie Entwicklungsland", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A22_DEZA_Projekte.html", "short": "A22 DEZA Projekte", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A23_Entwicklungshilfe_BV.html", "short": "A23 Entwicklungshilfe BV", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A2_Schuman_Plan.html", "short": "A2 Schuman Plan", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A3_EU_Grundfreiheiten.html", "short": "A3 EU Grundfreiheiten", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A4_EU_Geschichte.html", "short": "A4 EU Geschichte", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A5_EU_Aussagen.html", "short": "A5 EU Aussagen", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A6_EU_Karte.html", "short": "A6 EU Karte", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A7_EU_Organe.html", "short": "A7 EU Organe", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A8_EU_Organe_Aussagen.html", "short": "A8 EU Organe Aussagen", "ext": "html"}, {"name": "603_[UE]_Kapitel 5_A9_Schweiz_Europa.html", "short": "A9 Schweiz Europa", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A23_Globalisierung.html", "short": "A23 Globalisierung", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A24_Globalisierung_Beispiele.html", "short": "A24 Globalisierung Beispiele", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A25_Standort_Schweiz.html", "short": "A25 Standort Schweiz", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A26_Schweiz_globalisiert.html", "short": "A26 Schweiz globalisiert", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A27_Globalisierung_Risiken.html", "short": "A27 Globalisierung Risiken", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A28_Weltgueterhandel.html", "short": "A28 Weltgueterhandel", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A29_Exportgueter.html", "short": "A29 Exportgueter", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A30_Handelspartner.html", "short": "A30 Handelspartner", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A31_Handelspartner_Aussagen.html", "short": "A31 Handelspartner Aussagen", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A32_Swissness.html", "short": "A32 Swissness", "ext": "html"}, {"name": "603_[UE]_Kapitel 7_A33_Globalisierung_Gewinner.html", "short": "A33 Globalisierung Gewinner", "ext": "html"}, {"name": "603_[UE]_Schweiz_Welt.html", "short": "Schweiz Welt", "ext": "html"}]}, "604": {"TH": [{"name": "604_[TH]_Migration_(K5.4_hep).pdf", "short": "Migration (K5.4 hep)", "ext": "pdf"}, {"name": "604_[TH]_Migration_[Fragen]_(5.28_bis_5.46).pdf", "short": "Migration [Fragen] (5.28 bis 5.46)", "ext": "pdf"}], "UE": [{"name": "604_[UE]_Kapitel 5_A25_Bevoelkerungswachstum.html", "short": "A25 Bevoelkerungswachstum", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A26_Migrationstroeme.html", "short": "A26 Migrationstroeme", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A27_Push_Pull_Faktoren.html", "short": "A27 Push Pull Faktoren", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A28_Asylverfahren.html", "short": "A28 Asylverfahren", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A29_Migrationspolitik.html", "short": "A29 Migrationspolitik", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A30_Auslandschweizer.html", "short": "A30 Auslandschweizer", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A31_Zuwanderung_EU.html", "short": "A31 Zuwanderung EU", "ext": "html"}, {"name": "604_[UE]_Kapitel 5_A32_Asyl_Einbuergerung.html", "short": "A32 Asyl Einbuergerung", "ext": "html"}]}, "701": {"TH": [{"name": "701_[TH]_Angebot_Nachfrage_(K2.7_hep).pdf", "short": "Angebot Nachfrage (K2.7 hep)", "ext": "pdf"}, {"name": "701_[TH]_Angebot_Nachfrage_[Fragen]_(2.59_bis_2.62).pdf", "short": "Angebot Nachfrage [Fragen] (2.59 bis 2.62)", "ext": "pdf"}, {"name": "701_[TH]_BIP_Einkommensverteilung_(K2.8_hep).pdf", "short": "BIP Einkommensverteilung (K2.8 hep)", "ext": "pdf"}, {"name": "701_[TH]_BIP_Einkommensverteilung_[Fragen]_(2.72_bis_2.77).pdf", "short": "BIP Einkommensverteilung [Fragen] (2.72 bis 2.77)", "ext": "pdf"}, {"name": "701_[TH]_Inflation_Deflation_(K7.7_hep).pdf", "short": "Inflation Deflation (K7.7 hep)", "ext": "pdf"}, {"name": "701_[TH]_Inflation_Deflation_[Fragen]_(7.60_bis_7.69).pdf", "short": "Inflation Deflation [Fragen] (7.60 bis 7.69)", "ext": "pdf"}, {"name": "701_[TH]_Konjunktur_(K7.7_hep).pdf", "short": "Konjunktur (K7.7 hep)", "ext": "pdf"}, {"name": "701_[TH]_Konjunktur_[Fragen]_(7.48_bis_7.59).pdf", "short": "Konjunktur [Fragen] (7.48 bis 7.59)", "ext": "pdf"}, {"name": "701_[TH]_Wirtschaftskreislauf_(K2.7_hep).pdf", "short": "Wirtschaftskreislauf (K2.7 hep)", "ext": "pdf"}, {"name": "701_[TH]_Wirtschaftskreislauf_[Fragen]_(2.63_bis_2.71).pdf", "short": "Wirtschaftskreislauf [Fragen] (2.63 bis 2.71)", "ext": "pdf"}, {"name": "701_[TH]_Wirtschaftssektoren_(K7.7_hep).pdf", "short": "Wirtschaftssektoren (K7.7 hep)", "ext": "pdf"}, {"name": "701_[TH]_Wirtschaftssektoren_[Fragen]_(7.70_bis_7.72).pdf", "short": "Wirtschaftssektoren [Fragen] (7.70 bis 7.72)", "ext": "pdf"}], "UE": [{"name": "701_[UE]_Kapitel 2_A37_Too_Big_To_Fail.html", "short": "A37 Too Big To Fail", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A39_Produktionsfaktoren.html", "short": "A39 Produktionsfaktoren", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A40_Kapitalarten.html", "short": "A40 Kapitalarten", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A41_Wohlfahrt.html", "short": "A41 Wohlfahrt", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A42_BIP_Schweiz.html", "short": "A42 BIP Schweiz", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A43_BIP_Vergleich.html", "short": "A43 BIP Vergleich", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A44_Lebensqualitaet.html", "short": "A44 Lebensqualitaet", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A45_BIP_Nicht_Erfasst.html", "short": "A45 BIP Nicht Erfasst", "ext": "html"}, {"name": "701_[UE]_Kapitel 2_A46_Lorenzkurve.html", "short": "A46 Lorenzkurve", "ext": "html"}, {"name": "701_[UE]_Kapitel 4_A22_IV_Eingliederung.html", "short": "A22 IV Eingliederung", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A12_Konjunkturphasen.html", "short": "A12 Konjunkturphasen", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A13_Konjunktur_Massnahmen.html", "short": "A13 Konjunktur Massnahmen", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A14_Arbeitslosenquote.html", "short": "A14 Arbeitslosenquote", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A16_Inflation_Lueckentext.html", "short": "A16 Inflation Lueckentext", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A17_Warenkorb.html", "short": "A17 Warenkorb", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A20_Wirtschaftssektoren.html", "short": "A20 Wirtschaftssektoren", "ext": "html"}, {"name": "701_[UE]_Kapitel 7_A22_Branchen_Sektoren.html", "short": "A22 Branchen Sektoren", "ext": "html"}, {"name": "701_[UE]_Kapitel 8_A4_Arbeitslosigkeit.html", "short": "A4 Arbeitslosigkeit", "ext": "html"}]}, "702": {"TH": [{"name": "702_[TH]_Arbeitsvertrag_(K7.2_hep).pdf", "short": "Arbeitsvertrag (K7.2 hep)", "ext": "pdf"}, {"name": "702_[TH]_Arbeitsvertrag_rechtl_Grundlage_(K7.1_hep).pdf", "short": "Arbeitsvertrag rechtl Grundlage (K7.1 hep)", "ext": "pdf"}, {"name": "702_[TH]_Arbeitsvertrag_rechtl_Grundlage_[Fragen]_(7.1_bis_7.2).pdf", "short": "Arbeitsvertrag rechtl Grundlage [Fragen] (7.1 bis 7.2)", "ext": "pdf"}, {"name": "702_[TH]_Arbeitsvertrag_[Fragen]_(7.3_bis_7.35).pdf", "short": "Arbeitsvertrag [Fragen] (7.3 bis 7.35)", "ext": "pdf"}, {"name": "702_[TH]_Einfacher_Auftrag_(K7.4_hep).pdf", "short": "Einfacher Auftrag (K7.4 hep)", "ext": "pdf"}, {"name": "702_[TH]_Einfacher_Auftrag_[Fragen]_(7.41_bis_7.41).pdf", "short": "Einfacher Auftrag [Fragen] (7.41 bis 7.41)", "ext": "pdf"}, {"name": "702_[TH]_Gesamtarbeitsvertrag_(K7.3_hep).pdf", "short": "Gesamtarbeitsvertrag (K7.3 hep)", "ext": "pdf"}, {"name": "702_[TH]_Gesamtarbeitsvertrag_[Fragen]_(7.36_bis_7.40).pdf", "short": "Gesamtarbeitsvertrag [Fragen] (7.36 bis 7.40)", "ext": "pdf"}, {"name": "702_[TH]_Stellenbewerbung_(K8.1_hep).pdf", "short": "Stellenbewerbung (K8.1 hep)", "ext": "pdf"}, {"name": "702_[TH]_Stellenbewerbung_[Fragen]_(8.1_bis_8.9).pdf", "short": "Stellenbewerbung [Fragen] (8.1 bis 8.9)", "ext": "pdf"}, {"name": "702_[TH]_Werkvertrag_(K7.5_hep).pdf", "short": "Werkvertrag (K7.5 hep)", "ext": "pdf"}, {"name": "702_[TH]_Werkvertrag_[Fragen]_(7.42_bis_7.43).pdf", "short": "Werkvertrag [Fragen] (7.42 bis 7.43)", "ext": "pdf"}], "UE": [{"name": "702_[UE]_Kapitel 7_A10_GAV_Aussagen.html", "short": "A10 GAV Aussagen", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A11_Friedenspflicht.html", "short": "A11 Friedenspflicht", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A1_Arbeitsvertrag_Gesetze.html", "short": "A1 Arbeitsvertrag Gesetze", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A2_Lohn_Gesetz.html", "short": "A2 Lohn Gesetz", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A3_EAV_Aussagen.html", "short": "A3 EAV Aussagen", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A4_Pausen_Ruhezeit.html", "short": "A4 Pausen Ruhezeit", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A5_Arbeitszeit.html", "short": "A5 Arbeitszeit", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A6_Vertragsende.html", "short": "A6 Vertragsende", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A7_EAV_Rechtsfaelle.html", "short": "A7 EAV Rechtsfaelle", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A8_Arbeitsvertrag_pruefen.html", "short": "A8 Arbeitsvertrag pruefen", "ext": "html"}, {"name": "702_[UE]_Kapitel 7_A9_GAV_Vorteil.html", "short": "A9 GAV Vorteil", "ext": "html"}, {"name": "702_[UE]_Kapitel 8_A2_Bewerbungsdossier.html", "short": "A2 Bewerbungsdossier", "ext": "html"}, {"name": "702_[UE]_Kapitel 8_A3_Vorstellungsgespraech.html", "short": "A3 Vorstellungsgespraech", "ext": "html"}]}, "703": {"TH": [{"name": "703_[TH]_Geldanlage_(K8.3_hep).pdf", "short": "Geldanlage (K8.3 hep)", "ext": "pdf"}, {"name": "703_[TH]_Geldanlage_[Fragen]_(8.19_bis_8.21).pdf", "short": "Geldanlage [Fragen] (8.19 bis 8.21)", "ext": "pdf"}, {"name": "703_[TH]_Sozialversicherung_(K4.2_hep).pdf", "short": "Sozialversicherung (K4.2 hep)", "ext": "pdf"}, {"name": "703_[TH]_Sozialversicherung_[Fragen]_(4.16_bis_4.23).pdf", "short": "Sozialversicherung [Fragen] (4.16 bis 4.23)", "ext": "pdf"}, {"name": "703_[TH]_Steuer_(K8.2_hep).pdf", "short": "Steuer (K8.2 hep)", "ext": "pdf"}, {"name": "703_[TH]_Steuer_[Fragen]_(8.10_bis_8.18).pdf", "short": "Steuer [Fragen] (8.10 bis 8.18)", "ext": "pdf"}], "UE": [{"name": "703_[UE]_Kapitel 7_A18_Staatsschulden.html", "short": "A18 Staatsschulden", "ext": "html"}, {"name": "703_[UE]_Kapitel 7_A19_Staatsfinanzierung.html", "short": "A19 Staatsfinanzierung", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A10_Steuererklaerung.html", "short": "A10 Steuererklaerung", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A11_Steuerprogression.html", "short": "A11 Steuerprogression", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A12_Rendite_Risiko.html", "short": "A12 Rendite Risiko", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A13_Anlagestrategien.html", "short": "A13 Anlagestrategien", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A14_Kassaobligation.html", "short": "A14 Kassaobligation", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A15_Aktien.html", "short": "A15 Aktien", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A16_Zinsen_recherchieren.html", "short": "A16 Zinsen recherchieren", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A17_Sichere_Geldanlage.html", "short": "A17 Sichere Geldanlage", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A18_Anlagetipp.html", "short": "A18 Anlagetipp", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A19_Obligationen_Aktien.html", "short": "A19 Obligationen Aktien", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A5_Bundesfinanzen.html", "short": "A5 Bundesfinanzen", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A6_Steuerarten.html", "short": "A6 Steuerarten", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A7_Steuern_Lueckentext.html", "short": "A7 Steuern Lueckentext", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A8_Verrechnungssteuer.html", "short": "A8 Verrechnungssteuer", "ext": "html"}, {"name": "703_[UE]_Kapitel 8_A9_Einkommen_Vermoegen.html", "short": "A9 Einkommen Vermoegen", "ext": "html"}]}, "704": {"UE": [{"name": "704_[UE]_Kapitel 7_A21_Strukturwandel.html", "short": "A21 Strukturwandel", "ext": "html"}, {"name": "704_[UE]_Kapitel 8_A1_Weiterbildungswege.html", "short": "A1 Weiterbildungswege", "ext": "html"}]}};
+
+let activePhase = 'ALL';
+let activeThema = 'ALL';
+
+function setPhase(p) {
+  activePhase = p;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.toggle('active', b.dataset.phase === p));
+  renderAll();
+  renderAllAkt();
+}
+
+function filterThema() {
+  activeThema = document.getElementById('themaFilter').value;
+  renderAll();
+  renderAllAkt();
+}
+
+function chipHtml(phase, file, tc, code, lsName) {
+  const label = phase === 'PPT' ? 'PPT' : phase;
+  const inv = (INVENTORY[code] || {});
+  const hasFiles = inv[phase] && inv[phase].length > 0;
+  const dataAttrs = `data-code="${code}" data-phase="${phase}" data-tc="${tc}" data-name="${(lsName||'').replace(/"/g,'&quot;')}"`;
+  if (hasFiles) {
+    const title = file ? file.label : (PHASE_LABEL[phase]||phase);
+    return `<button class="chip chip-${phase}" onclick="openFp(this)" ${dataAttrs} title="${title}">[${label}]</button>`;
+  }
+  if (!file) {
+    return `<span class="chip chip-missing" title="Noch kein Material für ${PHASE_LABEL[phase]}">[${label}] fehlt</span>`;
+  }
+  const url = file.url && file.url !== '#' ? file.url : null;
+  if (url) {
+    return `<a class="chip chip-${phase}" href="${url}" target="_blank" title="${file.label}">[${label}]</a>`;
+  }
+  return `<span class="chip chip-${phase}" title="${file.label}">[${label}]</span>`;
+}
+
+
+function renderAll() {
+  const missingOnly = document.getElementById('missingOnly').checked;
+  const content = document.getElementById('content');
+  let totalLS = 0, presentCount = 0, missingCount = 0;
+  let html = '';
+
+  THEMES.forEach(theme => {
+    if (activeThema !== 'ALL' && String(theme.id) !== activeThema) return;
+    let themeHtml = '';
+
+    theme.ls.forEach(ls => {
+      totalLS++;
+      const phasesToShow = activePhase === 'ALL' ? PHASES : [activePhase];
+      let chips = '';
+      let hasMatch = false;
+      let hasMissing = false;
+
+      phasesToShow.forEach(p => {
+        const file = ls.files[p];
+        if (file) { presentCount++; hasMatch = true; }
+        else hasMissing = true;
+        chips += chipHtml(p, file, theme.tc, ls.id, ls.name);
+      });
+
+      if (missingOnly && !hasMissing) return;
+      if (activePhase !== 'ALL' && !hasMatch && !missingOnly) return;
+
+      themeHtml += `<div class="ls-row">
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;">
+          <span class="ls-code" style="color:${theme.tc};opacity:1;font-size:18px;min-width:36px">${ls.id}</span>
+          <span class="ls-name">${ls.name}</span>
+          <div class="phase-chips" style="margin-left:auto">${chips}</div>
+        </div>
+      </div>`;
+    });
+
+    if (!themeHtml) return;
+
+    // Aktualität-Zone anhängen
+    themeHtml += renderAktZone(theme);
+
+    html += `<div class="theme-block" style="--tc:${theme.tc};--tbg:${theme.tbg}" id="theme-${theme.id}">
+      <div class="theme-title-bar" onclick="toggleTheme(${theme.id})">
+        <div class="theme-stripe" style="background:${theme.tc}"></div>
+        <div class="theme-title" style="color:${theme.tc}">${theme.name}</div>
+        <div class="theme-num">Thema ${theme.id}</div>
+        <span class="theme-toggle open" id="tog-${theme.id}">▾</span>
+      </div>
+      <div class="theme-body" id="tbody-${theme.id}">${themeHtml}</div>
+    </div>`;
+  });
+
+  content.innerHTML = html || `<div class="no-results">Kein Material gefunden für diese Filterauswahl.</div>`;
+
+  const missingChips = document.querySelectorAll('.chip-missing');
+  missingCount = missingChips.length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><strong>${totalLS}</strong>Lebenssituationen</div>
+    <div class="stat-card"><strong>${presentCount}</strong>Materialien vorhanden</div>
+    <div class="stat-card" style="border-color:#fca5a5"><strong style="color:#dc2626">${missingCount}</strong>Phasen fehlen</div>
+  `;
+}
+
+function toggleTheme(id) {
+  const body = document.getElementById('tbody-'+id);
+  const tog = document.getElementById('tog-'+id);
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  tog.classList.toggle('open', hidden);
+}
+
+renderAll();
+
+// ═══════════════════════════════════════════════════════════════════
+// AKTUALITÄT — zwei getrennte Quellen
+//
+// 1. 🤖 KI-Beiträge  → aktualitaeten.json (GitHub Actions, täglich/wöchentlich)
+//    JSON-Struktur pro Thema:
+//    { "2": [
+//        { "id": "art-001",
+//          "date": "30.05.25",
+//          "title": "SNB senkt Leitzins",
+//          "source": "SRF",
+//          "url": "https://...",
+//          "varianten": [
+//            { "phase": "E",   "text": "Frage: Was bedeutet...?",   "pptUrl": "#" },
+//            { "phase": "TH",  "text": "Hintergrund: Der Leitzins...", "url": "#" },
+//            { "phase": "UE",  "text": "Aufgabe: Berechne...",        "url": "#" }
+//          ]
+//        }, ...
+//      ]
+//    }
+//
+// 2. 📂 LP-Beiträge → SharePoint _AKTUALITAETEN/ (via Graph API)
+//    Dateiname: 200_AKT_[E]_SNB_Zinsen.pdf
+// ═══════════════════════════════════════════════════════════════════
+
+const PHASE_COLORS = {
+  E:  {bg:'#DBEAFE', col:'#1e40af'},
+  TH: {bg:'#DCFCE7', col:'#166534'},
+  UE: {bg:'#FEF3C7', col:'#92400e'},
+  A:  {bg:'#F3E8FF', col:'#6b21a8'},
+  VID:{bg:'#E0F2FE', col:'#0c4a6e'},
+  PPT:{bg:'#FEE2E2', col:'#991b1b'},
+};
+const MAX_RECENT = 3;
+
+// ── Daten laden ─────────────────────────────────────────────────────
+
+async function loadKiEntries(themeId) {
+  try {
+    const r = await fetch('aktualitaeten.json?t=' + Date.now());
+    if (!r.ok) return [];
+    const data = await r.json();
+    return data[String(themeId)] || [];
+  } catch(e) {
+    // Noch nicht vorhanden — Demo-Daten für Vorschau
+    if (String(themeId) === '2') return DEMO_KI_ENTRIES;
+    return [];
+  }
+}
+
+// Demo-Daten zeigen wie es aussehen wird
+function relDate(daysAgo) {
+  const d = new Date(); d.setDate(d.getDate() - daysAgo);
+  return d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit'});
+}
+const DEMO_KI_ENTRIES = [
+  { id:'demo-1', date:relDate(1), title:'SNB senkt Leitzins auf 0.5%', source:'SRF',
+    varianten:[
+      {phase:'E',  text:'Einstiegsfrage: Was bedeutet ein tieferer Leitzins für dein Sparkonto?'},
+      {phase:'TH', text:'Hintergrund: Die SNB steuert mit dem Leitzins die Inflation...'},
+      {phase:'UE', text:'Aufgabe: Berechne, wie sich dein Sparguthaben bei 0.5% Zins entwickelt.'},
+    ]},
+  { id:'demo-2', date:relDate(3), title:'Inflation sinkt auf 1.2%', source:'NZZ',
+    varianten:[
+      {phase:'E',  text:'Was kaufst du dir, wenn alles billiger wird?'},
+      {phase:'TH', text:'Inflation misst die Teuerung eines Warenkorbs über Zeit...'},
+    ]},
+];
+
+async function loadSpEntries(themeId) {
+  try {
+    // TODO: Azure App-Registrierung → Sites.Read.All
+    // const r = await fetch(`https://graph.microsoft.com/v1.0/sites/${SITE_ID}/drive/root:/_AKTUALITAETEN_T${themeId}:/children`,
+    //   { headers: { Authorization: 'Bearer ' + await getToken() } });
+    // const data = await r.json();
+    // return parseSpFiles(data.value);
+    return [];
+  } catch(e) { return []; }
+}
+
+function parseSpFileName(name) {
+  const m = name.match(/^(\d+)_AKT_\[?(\w+)\]?_(.+)\.\w+$/);
+  if (!m) return null;
+  return { lsId:m[1], phase:m[2].toUpperCase(), title:m[3].replace(/_/g,' ') };
+}
+
+// ── Render ──────────────────────────────────────────────────────────
+
+// Rendert einen Artikel mit all seinen Varianten als Chips
+function renderKiArticle(article) {
+  // Filter: zeige nur Varianten die zum aktiven Phase-Filter passen
+  const variantsToShow = article.varianten.filter(v =>
+    activePhase === 'ALL' || v.phase === activePhase
+  );
+  if (variantsToShow.length === 0) return ''; // nicht anzeigen wenn gefiltert
+
+  const chips = variantsToShow.map(v => {
+    const pc = PHASE_COLORS[v.phase] || {bg:'#F3F4F6',col:'#6B7280'};
+    const url = v.pptUrl || v.url || null;
+    return url
+      ? `<a class="chip chip-${v.phase}" href="${url}" target="_blank" title="${v.text}">[${v.phase}]</a>`
+      : `<span class="chip chip-${v.phase}" title="${v.text}">[${v.phase}]</span>`;
+  }).join('');
+
+  const isDemo = article.id.startsWith('demo');
+  return `<div class="akt-entry${isDemo?' akt-entry-demo':''}">
+    <span class="akt-entry-date">${article.date}</span>
+    <span class="akt-entry-title" title="${article.title}">${article.title}</span>
+    <span style="font-size:10px;color:var(--g5);flex-shrink:0">${article.source}</span>
+    ${article.url ? `<a class="akt-entry-link" href="${article.url}" target="_blank">↗</a>` : ''}
+    <div style="display:flex;gap:3px;flex-shrink:0">${chips}</div>
+    ${isDemo ? `<span style="font-size:9px;color:var(--g3);flex-shrink:0">Demo</span>` : ''}
+  </div>`;
+}
+
+function renderSpEntry(e) {
+  const pc = PHASE_COLORS[e.phase] || {bg:'#F3F4F6',col:'#6B7280'};
+  if (activePhase !== 'ALL' && e.phase !== activePhase) return '';
+  return `<div class="akt-entry">
+    <span class="akt-entry-date">${e.date||''}</span>
+    <span class="akt-entry-phase" style="background:${pc.bg};color:${pc.col}">[${e.phase}]</span>
+    <span class="akt-entry-title">${e.title}</span>
+    ${e.url ? `<a class="akt-entry-link" href="${e.url}" target="_blank">↗</a>` : ''}
+  </div>`;
+}
+
+// Skeleton (synchron, sofort)
+function renderAktZone(theme) {
+  return `<div class="akt-zone" id="akt-${theme.id}">
+    <div class="akt-header">
+      <span style="font-size:15px">🗞</span>
+      <span class="akt-title">Aktualität</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:${theme.tc}22;color:${theme.tc};padding:2px 8px;border-radius:10px;">${theme.name}</span>
+    </div>
+    <div class="akt-cols">
+      <div class="akt-col">
+        <div class="akt-block-header">
+          <span class="akt-block-icon">🤖</span>
+          <span class="akt-block-label">KI-Beiträge</span>
+          <span id="akt-ki-status-${theme.id}" style="font-size:10px;color:var(--g3)">lädt…</span>
+        </div>
+        <div class="akt-entries" id="akt-ki-entries-${theme.id}"></div>
+        <div id="akt-ki-archive-wrap-${theme.id}"></div>
+      </div>
+      <div class="akt-col-divider"></div>
+      <div class="akt-col">
+        <div class="akt-block-header">
+          <span class="akt-block-icon">📂</span>
+          <span class="akt-block-label">LP-Beiträge</span>
+          <span id="akt-sp-status-${theme.id}" style="font-size:10px;color:var(--g3)">lädt…</span>
+        </div>
+        <div class="akt-entries" id="akt-sp-entries-${theme.id}"></div>
+        <div id="akt-sp-archive-wrap-${theme.id}"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Daten einfüllen (async, nach Render)
+async function fillAktZone(theme) {
+  const [kiAll, spAll] = await Promise.all([
+    loadKiEntries(theme.id),
+    loadSpEntries(theme.id)
+  ]);
+
+  // ── KI ──
+  const kiRecent  = kiAll.slice(0, MAX_RECENT);
+  const kiArchive = kiAll.slice(MAX_RECENT);
+
+  const kiStatusEl  = document.getElementById(`akt-ki-status-${theme.id}`);
+  const kiEntriesEl = document.getElementById(`akt-ki-entries-${theme.id}`);
+  const kiArcWrap   = document.getElementById(`akt-ki-archive-wrap-${theme.id}`);
+
+  if (kiStatusEl) {
+    if (kiAll.length) {
+      const isDemo = kiAll[0].id?.startsWith('demo');
+      kiStatusEl.innerHTML = isDemo
+        ? `<span style="color:var(--g3);font-style:italic">Demo-Vorschau · wird durch GitHub Actions befüllt</span>`
+        : `<span style="color:var(--g5)">aktualisiert · ${kiAll[0].date}</span>`;
+    } else {
+      kiStatusEl.innerHTML = `<span style="color:var(--g3);font-style:italic">Noch nicht eingerichtet</span>`;
+    }
+  }
+
+  if (kiEntriesEl) {
+    const rows = kiRecent.map(a => renderKiArticle(a)).filter(Boolean).join('');
+    kiEntriesEl.innerHTML = rows ||
+      `<div style="font-size:11px;color:var(--g3);padding:5px 0;font-style:italic">Wird automatisch befüllt (GitHub Actions)</div>`;
+  }
+
+  if (kiArcWrap && kiArchive.length) {
+    const arcRows = kiArchive.map(a => renderKiArticle(a)).filter(Boolean).join('');
+    if (arcRows) kiArcWrap.innerHTML =
+      `<button class="akt-archive-toggle" onclick="toggleArchive('ki-${theme.id}')">▸ Archiv (${kiArchive.length} ältere Artikel)</button>
+       <div class="akt-archive" id="akt-archive-ki-${theme.id}">${arcRows}</div>`;
+  }
+
+  // ── SharePoint ──
+  const spRecent  = spAll.slice(0, MAX_RECENT);
+  const spArchive = spAll.slice(MAX_RECENT);
+
+  const spStatusEl  = document.getElementById(`akt-sp-status-${theme.id}`);
+  const spEntriesEl = document.getElementById(`akt-sp-entries-${theme.id}`);
+  const spArcWrap   = document.getElementById(`akt-sp-archive-wrap-${theme.id}`);
+
+  if (spStatusEl) spStatusEl.innerHTML = spAll.length
+    ? `<span style="color:var(--g5)">${spAll.length} Datei(en)</span>`
+    : `<span style="color:var(--g3);font-style:italic">Noch nicht eingerichtet</span>`;
+
+  if (spEntriesEl) {
+    const rows = spRecent.map(e => renderSpEntry(e)).filter(Boolean).join('');
+    spEntriesEl.innerHTML = rows ||
+      `<div style="font-size:11px;color:var(--g3);padding:5px 0;font-style:italic">Dateien hochladen in SharePoint → <code style="font-size:10px">0${theme.id}…/_AKTUALITAETEN/</code></div>`;
+  }
+
+  if (spArcWrap && spArchive.length) {
+    const arcRows = spArchive.map(e => renderSpEntry(e)).filter(Boolean).join('');
+    if (arcRows) spArcWrap.innerHTML =
+      `<button class="akt-archive-toggle" onclick="toggleArchive('sp-${theme.id}')">▸ Archiv (${spArchive.length} ältere)</button>
+       <div class="akt-archive" id="akt-archive-sp-${theme.id}">${arcRows}</div>`;
+  }
+}
+
+function toggleArchive(key) {
+  const arc = document.getElementById(`akt-archive-${key}`);
+  if (!arc) return;
+  arc.classList.toggle('open');
+  const btn = arc.previousElementSibling;
+  btn.textContent = arc.classList.contains('open')
+    ? '▾ Archiv schliessen'
+    : btn.textContent.replace('▾','▸');
+}
+
+// Nach renderAll() alle Aktualitäts-Zonen befüllen
+// Wird auch bei Phase-Filter-Wechsel aufgerufen (re-render)
+async function renderAllAkt() {
+  const visible = THEMES.filter(t =>
+    activeThema === 'ALL' || String(t.id) === activeThema
+  );
+  await Promise.all(visible.map(t => fillAktZone(t)));
+}
+
+renderAllAkt();
+
+const SP_TH = {"101": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/01_Mein_Lehrbeginn/101_Lehrvertrag/101_Theorie?csf=1&web=1", "102": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/01_Mein_Lehrbeginn/102_Rechtsgrundlage/102_Theorie?csf=1&web=1&e=h505pB", "103": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/01_Mein_Lehrbeginn/103_Kommunikation/103_Theorie?csf=1&web=1", "201": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/02_Mein_Geld/201_Lohn/201_Theorie?csf=1&web=1&e=UoA2xu", "202": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/02_Mein_Geld/202_Konsum/202_Theorie?csf=1&web=1&e=qnY90c", "203": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/02_Mein_Geld/203_Kaufvertrag/203_Theorie?csf=1&web=1&e=KPmffY", "204": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/02_Mein_Geld/204_Investition/204_Theorie?csf=1&web=1&e=vbbKTw", "301": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/03_Meine_Gesundheit/301_Gesundheitsfaktoren/301_Theorie?csf=1&web=1&e=zsXUkK", "302": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/03_Meine_Gesundheit/302_Eigenverantwortung_Praevention/302_Theorie?csf=1&web=1&e=bphIZe", "303": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/03_Meine_Gesundheit/303_Krankenkasse/303_Theorie?csf=1&web=1&e=MQdatG", "304": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/03_Meine_Gesundheit/304_Stress_Sucht/304_Theorie?csf=1&web=1&e=ymuTCw", "305": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/03_Meine_Gesundheit/305_Gewalt?csf=1&web=1&e=QYREl7", "401": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/04_Unsere_Schweiz/401_Demokratie/401_Theorie?csf=1&web=1&e=LG4NFF", "402": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/04_Unsere_Schweiz/402_Meinungsbildung/402_Theorie?csf=1&web=1&e=v3Mj4g", "403": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/04_Unsere_Schweiz/403_Vielseitigkeit/403_Theorie?csf=1&web=1&e=SqqdEq", "501": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/05_Unser_Zusammenleben/501_Beziehungen/501_Theorie?csf=1&web=1&e=WwfBhW", "502": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/05_Unser_Zusammenleben/502_Ausziehen/502_Theorie?csf=1&web=1&e=rZWQSz", "503": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/05_Unser_Zusammenleben/503_Lebensmodell/503_Theorie?csf=1&web=1&e=Hc1m20", "504": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/05_Unser_Zusammenleben/504_Multikulturell/504_Theorie?csf=1&web=1&e=kCWdRE", "505": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/05_Unser_Zusammenleben/505_Mitgestaltung/505_Theorie?csf=1&web=1&e=4TQAbv", "601": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/06_Unsere_Welt/601_Weltgeschehen/601_Theorie?csf=1&web=1", "602": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/06_Unsere_Welt/602_%C3%96kologische_Herausforderung/602_Theorie?csf=1&web=1", "603": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/06_Unsere_Welt/603_Vernetzung/603_Theorie?csf=1&web=1", "604": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/06_Unsere_Welt/604_Migration/604_Theorie?csf=1&web=1", "701": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/07_Meine_Zukunft/701_Arbeitsmarkt/701_Theorie?csf=1&web=1", "702": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/07_Meine_Zukunft/702_Stellensuche/702_Theorie?csf=1&web=1", "703": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/07_Meine_Zukunft/703_Lohn_erhalten/703_Theorie?csf=1&web=1", "704": "https://bldsg.sharepoint.com/:f:/r/teams/ABULernportal/Freigegebene%20Dokumente/General/Lernportal/07_Meine_Zukunft/704_Zukunftperspektiven/704_Theorie?csf=1&web=1"};
+
+const TYPE_LABEL2 = {TH:'Theorie',UE:'Übungen',E:'Einstieg',A:'Abschluss',QZ:'Quiz'};
+const TYPE_ICON2  = {TH:'📘',UE:'✏️',E:'🚀',A:'🎯',QZ:'🧠'};
+const GITHUB_BASE = 'https://walu2026.github.io/ABU-Portal/';
+let fpState = {};
+
+function openFp(btn) {
+  const code = btn.dataset.code;
+  const phase = btn.dataset.phase;
+  const tc = btn.dataset.tc;
+  const name = btn.dataset.name;
+  fpState = {code, tc, name};
+
+  const inv = INVENTORY[code] || {};
+  const available = ['E','TH','UE','A','QZ'].filter(t => inv[t] && inv[t].length > 0);
+
+  document.getElementById('fpTitle').textContent = code + ' · ' + name;
+  document.getElementById('fpTitle').style.color = tc;
+
+  fpState.activeTab = available.includes(phase) ? phase : (available[0] || null);
+  renderFpTabs(available, inv);
+  if (fpState.activeTab) renderFpList(inv[fpState.activeTab] || []);
+  else document.getElementById('fpList').innerHTML = '<div class="fp-empty">Keine Dateien verfügbar.</div>';
+  document.getElementById('fpOverlay').classList.add('open');
+}
+
+function renderFpTabs(available, inv) {
+  document.getElementById('fpTabs').innerHTML = available.map(t =>
+    `<button class="fp-tab${t===fpState.activeTab?' active':''}" onclick="switchFpTab('${t}')"
+      style="${t===fpState.activeTab?'color:'+fpState.tc:''}">
+      ${TYPE_ICON2[t]||''} ${TYPE_LABEL2[t]||t}
+      <span style="opacity:.6;font-size:10px">(${inv[t].length})</span>
+    </button>`
+  ).join('');
+}
+
+function switchFpTab(type) {
+  fpState.activeTab = type;
+  const inv = INVENTORY[fpState.code] || {};
+  const available = ['E','TH','UE','A','QZ'].filter(t => inv[t] && inv[t].length > 0);
+  renderFpTabs(available, inv);
+  renderFpList(inv[type] || []);
+}
+
+function renderFpList(files) {
+  const tc = fpState.tc;
+  document.getElementById('fpSubtitle').textContent =
+    (TYPE_LABEL2[fpState.activeTab]||fpState.activeTab) + ' · ' + files.length + ' Datei' + (files.length!==1?'en':'');
+  document.getElementById('fpList').innerHTML = files.length === 0
+    ? '<div class="fp-empty">Keine Dateien.</div>'
+    : files.map(f => {
+        const isHtml = f.ext === 'html';
+        if (isHtml) {
+          const url = GITHUB_BASE + f.name;
+          return `<a class="fp-item" href="${url}" target="_blank" rel="noopener"
+            style="--fp-tc:${tc};--fp-bg:${tc}18">
+            <span>🔗</span>${f.short}
+            <span class="fp-item-ext" style="background:${tc}22;color:${tc}">HTML</span>
+          </a>`;
+        }
+        const spUrl = SP_TH[fpState.code];
+        if (spUrl) {
+          return `<a class="fp-item" href="${spUrl}" target="_blank" rel="noopener"
+            style="--fp-tc:#666;--fp-bg:#f3f4f6">
+            <span>📄</span>${f.short}
+            <span class="fp-item-ext">PDF → SP</span>
+          </a>`;
+        }
+        return `<div class="fp-item" style="opacity:.65;cursor:default">
+          <span>📄</span>${f.short}
+          <span class="fp-item-ext">PDF</span>
+        </div>`;
+      }).join('');
+}
+
+function closeFp() { document.getElementById('fpOverlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeFp(); });
+
+</script>
+
+<div class="fp-overlay" id="fpOverlay" onclick="if(event.target===this)closeFp()">
+  <div class="fp-panel">
+    <div class="fp-header">
+      <div><div class="fp-title" id="fpTitle"></div><div class="fp-subtitle" id="fpSubtitle"></div></div>
+      <button class="fp-close" onclick="closeFp()">✕</button>
+    </div>
+    <div class="fp-tabs" id="fpTabs"></div>
+    <div class="fp-body"><div class="fp-list" id="fpList"></div></div>
+  </div>
+</div>
+</body>
+</html>
